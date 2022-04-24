@@ -5,9 +5,9 @@ import lombok.Data;
 @Data
 public class Status {
   
-	int authorisation;
-	int training;
-	int admin;
+	private byte authorisation;
+	private byte training;
+	private byte admin;
 	@Override
 	public String toString() {
 		String auth;

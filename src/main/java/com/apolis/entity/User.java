@@ -12,8 +12,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class User {
     
-	private long id;
-	private long deviceId;
+	private String id;
+	private String deviceId;
 	private Status status;
 	
 	
@@ -22,7 +22,7 @@ public class User {
 		final int prime = 31;
 		int result = 1;
 		
-		result = prime * result + (int) (id ^ (id >>> 32));
+		result = prime * result + (this.id != null ? this.id.hashCode() : 0);
 		
 		return result;
 	}
@@ -37,7 +37,7 @@ public class User {
 			return false;
 		User other = (User) obj;
 	
-		if (id != other.getId())
+		if (!id.equals(other.getId()))
 			return false;
 	
 		return true;

@@ -13,42 +13,51 @@ import java.util.Set;
 import com.apolis.entity.User;
 
 
+
 public class DeviceUserManager {
     
      Set<User> deviceUserListUpdated;	
-     List<User> portalUserList;
-     List<User> deviceUserList;
+     Set<User> portalUserList;
+     Set<User> deviceUserList;
      
 	public void updateUsers() {
 		
-		portalUserList.stream().forEach(x->deviceUserListUpdated.add(x));
+		portalUserList.stream().filter(x-> deviceUserList.contains(x)).
+		forEach(x->deviceUserListUpdated.add(x));
 		deviceUserList.stream().forEach(x->deviceUserListUpdated.add(x));
 	}
     
-	public void readTabDelimitedFile(String filePath,List<User> array)throws FileNotFoundException{
+	public Set<User> readTabDelimitedFile(String filePath,Set<User> array)throws FileNotFoundException{
 	    Scanner scan = new Scanner(new File(filePath));
 	   
 	    while(scan.hasNext()){
 	        User user = new User();
 	    	String curLine = scan.nextLine();
 	        String[] splitted = curLine.split("\t");
-	        user.setId(Long.parseLong(splitted[0].trim()));
-	        user.setDeviceId(Long.parseLong(splitted[1].trim()));
-	        user.getStatus().setAuthorisation(Integer.parseInt(splitted[2].trim()));
-	        user.getStatus().setTraining(Integer.parseInt(splitted[3].trim()));
-	        user.getStatus().setAdmin(Integer.parseInt(splitted[3].trim()));
+	        user.setId(splitted[0].trim());
+	        user.setDeviceId(splitted[1].trim());
+	        Integer bit7 = Integer.parseInt(splitted[2].trim(),16) & (1<<7);
+	        byte bite7 = bit7.byteValue();
+	        user.getStatus().setAuthorisation(bite7);
+	        Integer bit6 = Integer.parseInt(splitted[2].trim(),16) & (1<<6);
+	        byte bite6 = bit6.byteValue();
+	        user.getStatus().setTraining(bite6);
+	        Integer bit5 = Integer.parseInt(splitted[2].trim(),16) & (1<<5);
+	        byte bite5 = bit5.byteValue();
+	        user.getStatus().setAdmin(bite5);
 	        array.add(user);
 	    }
 	    
 	    scan.close();
+	    return array;
 	}
     
      
-	public void TabDelimitedDataFile() throws IOException{
+	public void writeTabDelimitedDataFile(String filePath) throws IOException{
 		
 		
 	    try (PrintWriter writer = new PrintWriter(
-	       Files.newBufferedWriter(Paths.get("deviceUserListUpdated.dat")))){
+	       Files.newBufferedWriter(Paths.get(filePath)))){
 	            for (User user : deviceUserListUpdated) {
 	                
 	            	String auth;
@@ -74,10 +83,10 @@ public class DeviceUserManager {
      public static void main(String[] args) throws IOException {
     	 
     	 DeviceUserManager manager = new DeviceUserManager();
-    	 manager.readTabDelimitedFile("portalUserLis.dat", manager.portalUserList);
-    	 manager.readTabDelimitedFile("deviceUserLis.dat", manager.deviceUserList);
+    	 manager.readTabDelimitedFile("main/resources/PortalUserList.txt", manager.portalUserList);
+    	 manager.readTabDelimitedFile("main/resources/DeviceUserList.txt", manager.deviceUserList);
     	 manager.updateUsers();
-    	 manager.TabDelimitedDataFile();
+    	 manager.writeTabDelimitedDataFile("deviceUserListUpdated.dat");
      }
 
 	}
